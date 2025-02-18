@@ -1,11 +1,20 @@
 import speech_recognition as sr
 import pyttsx3
+from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
+from comtypes import CLSCTX_ALL
+from ctypes import cast, POINTER
+import os
 
 # Initialize text_to_speech engine
 engine = pyttsx3.init()
 voices = engine.getProperty('voices')
 engine.setProperty('voice', voices[1].id)
 engine.setProperty('rate', 170)
+
+# Initialize system volume control
+devices = AudioUtilities.GetSpeakers()
+interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
+volume = cast(interface, POINTER(IAudioEndpointVolume))
 
 # function to convert text to speech
 def speak(text):
@@ -33,3 +42,28 @@ def recognize_speech():
         except sr.WaitTimeoutError:
             speak("I'm sorry, i didn't hear you.")
             return None
+
+# function to control system volume
+def control_volume(command):
+    if "volume up" in command:
+        current_volume = volume.GetMasterVolumeLevelScalar()
+        volume.SetMasterVolumeLevelScalar(min(current_volume + 0.1, 1.0), None)
+        speak("Volume increased.")
+    elif "volume down" in command:
+        current_volume = volume.GetMasterVolumeLevelScalar()
+        volume.SetMasterVolumeLevelScalar(min(current_volume - 0.1, 1.0), None)
+        speak("Volume decreased.")
+
+# function to open applications
+def open_app(command):
+    apps = {
+        "notepad": "notepad.exe",
+        "calculator": "calc.exe",
+        "spotify": "spotify.exe"
+    }
+    for app in apps:
+        if app in command:
+            speak(f"Opening {app}.")
+            os.system(apps[app])
+            return True
+    return False
