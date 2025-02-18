@@ -6,6 +6,7 @@ from ctypes import cast, POINTER
 import os
 from datetime import datetime
 import wikipedia
+import pyaudio
 
 # Initialize text_to_speech engine
 engine = pyttsx3.init()
@@ -89,3 +90,26 @@ def search_wikipedia(command):
             speak("No results found.")
         return True
     return False
+
+# main function
+def main():
+    speak("Hello, how can I help you?")
+    while True:
+        command = recognize_speech()
+        if command:
+            if "exit" in command:
+                speak("Goodbye!")
+                break
+            elif "volume" in command:
+                control_volume(command)
+            elif "time" in command:
+                get_time()
+            elif open_app(command):
+                continue
+            elif search_wikipedia(command):
+                continue
+            else:
+                speak("I don't understand that.")
+            
+if __name__ == "__main__":
+    main()
