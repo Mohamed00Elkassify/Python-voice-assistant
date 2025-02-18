@@ -4,6 +4,8 @@ from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 from comtypes import CLSCTX_ALL
 from ctypes import cast, POINTER
 import os
+from datetime import datetime
+import wikipedia
 
 # Initialize text_to_speech engine
 engine = pyttsx3.init()
@@ -66,4 +68,24 @@ def open_app(command):
             speak(f"Opening {app}.")
             os.system(apps[app])
             return True
+    return False
+
+# function to get current time
+def get_time():
+    time = datetime.now().strftime("%I:%M %p")  # %I for 12-hour format, %p for AM/PM
+    speak(f"The time is {time}.")
+
+# function to search on wikipedia
+def search_wikipedia(command):
+    if "search for" in command:
+        query = command.replace("search for", "").strip()
+        speak(f"Searching Wikipedia for {query}.")
+        try:
+            result = wikipedia.summary(query, sentences=2)
+            speak(result)
+        except wikipedia.exceptions.DisambiguationError: # if there are multiple results
+            speak("There are multiple results, please be more specific.")
+        except wikipedia.exceptions.PageError: # if no results are found
+            speak("No results found.")
+        return True
     return False
